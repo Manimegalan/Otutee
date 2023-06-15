@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const axios = require("axios");
 
 exports.sendResponse = (res, code, message, data) => {
   const response = {
@@ -49,4 +50,44 @@ exports.sendMail = async (data) => {
     html: `<b>${data}</b>`,
   });
   return info;
+};
+
+exports.generateOTP = () => {
+  const min = 100000;
+  const max = 999999;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+const urlParams = (obj) => {
+  const params = new URLSearchParams();
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      params.append(key, obj[key]);
+    }
+  }
+  return params.toString();
+};
+
+exports.sendOtp = async (MobileNumber, code) => {
+  const { EXOTEL_KEY, EXOTEL_TOKEN, EXOTEL_SUBDOMAIN, EXOTEL_SID } =
+    process.env;
+
+  const data = {
+    From: process.env.EXOTEL_FROM,
+    To: MobileNumber,
+    Body: `Dear Customer, ${code} is the OTP to register as a Customer. OTPs are secret. Please DO NOT disclose it to anyone. Team Mitrakart`,
+    DltEntityId: process.env.EXOTEL_DLTTEMPLATEID,
+  };
+
+  const url = `http://${EXOTEL_KEY}:${EXOTEL_TOKEN}${[
+    EXOTEL_SUBDOMAIN,
+  ]}/v1/Accounts/${EXOTEL_SID}/Sms/send`;
+
+  return await axios.post(url, urlParams(data), {
+    withCredentials: true,
+    headers: {
+      Accept: "application/x-www-form-urlencoded",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
 };

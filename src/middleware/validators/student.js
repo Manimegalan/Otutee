@@ -43,6 +43,14 @@ const resetPassword = () => {
   ];
 };
 
+const sendOtp = () => {
+  return [body("MobileNumber").not().isEmpty()];
+};
+
+const verifyOtp = () => {
+  return [body("MobileNumber").not().isEmpty(), body("OTP").not().isEmpty()];
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (errors.isEmpty()) {
@@ -62,5 +70,7 @@ module.exports = {
   signin,
   forgotPassword,
   resetPassword,
+  sendOtp,
+  verifyOtp,
   validate,
 };

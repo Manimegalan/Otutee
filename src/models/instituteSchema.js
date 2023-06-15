@@ -1,5 +1,14 @@
 const mongoose = require("mongoose");
 
+const otpSchema = mongoose.Schema({
+  code: {
+    type: Number,
+  },
+  expired: {
+    type: Boolean,
+  },
+});
+
 const instituteSchema = mongoose.Schema(
   {
     Role: {
@@ -60,6 +69,7 @@ const instituteSchema = mongoose.Schema(
     token: {
       type: String,
     },
+    otp: [otpSchema],
   },
   { timestamps: true }
 );

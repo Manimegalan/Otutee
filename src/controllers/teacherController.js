@@ -11,6 +11,8 @@ const {
   createJwtToken,
   sendMail,
   verifyJwtToken,
+  generateOTP,
+  sendOtp,
 } = require("../utils/common");
 
 teacherController.post(
@@ -167,6 +169,109 @@ teacherController.post(
           message: "Password reset successfully!",
         });
       }
+    } catch (error) {
+      console.log(error);
+      sendResponse(res, 500, "Failed", {
+        message: error.message || "Internal server error",
+      });
+    }
+  }
+);
+
+teacherController.post(
+  "/sendOtp",
+  teacherValidator.sendOtp(),
+  teacherValidator.validate,
+  async (req, res) => {
+    try {
+      const { MobileNumber } = req.body;
+      const code = generateOTP();
+      const isMobileNumberExist = await teacherService.findOne({
+        MobileNumber,
+      });
+      if (!isMobileNumberExist) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Incorrect Mobile number or Teacher not found!",
+        });
+      }
+      const response = await sendOtp(MobileNumber, code);
+
+      await teacherService.updateOne(
+        {
+          MobileNumber,
+        },
+        {
+          $push: {
+            otp: {
+              code,
+              expired: false,
+            },
+          },
+        }
+      );
+
+      sendResponse(res, 200, "Success", {
+        message: "OTP sent successfully!",
+        data: response.data,
+      });
+    } catch (error) {
+      console.log(error);
+      sendResponse(res, 500, "Failed", {
+        message: error.message || "Internal server error",
+      });
+    }
+  }
+);
+
+teacherController.post(
+  "/verifyOtp",
+  teacherValidator.verifyOtp(),
+  teacherValidator.validate,
+  async (req, res) => {
+    try {
+      let otpIndex;
+      const { MobileNumber, OTP } = req.body;
+      const isMobileNumberExist = await teacherService.findOne({
+        MobileNumber,
+      });
+      if (!isMobileNumberExist) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Incorrect Mobile number or Teacher not found!",
+        });
+      }
+      const otpData = isMobileNumberExist.otp.find((obj, index) => {
+        if (obj.code === OTP) {
+          otpIndex = index;
+          return true;
+        }
+      });
+      if (!otpData) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Invalid OTP!",
+        });
+      }
+      if (otpData.expired) {
+        return sendResponse(res, 400, "Failed", {
+          message: "OTP expired!",
+        });
+      }
+
+      const { _id, Name, Email, Role } = isMobileNumberExist;
+      const token = createJwtToken({ _id, Name, Email, Role }, "1d");
+      await teacherService.updateOne(
+        { _id },
+        {
+          $set: {
+            token,
+            [`otp.${otpIndex}.expired`]: true,
+          },
+        }
+      );
+
+      sendResponse(res, 200, "Success", {
+        message: "OTP verified & Logged in successfully!",
+        data: { _id, Email, Name, token },
+      });
     } catch (error) {
       console.log(error);
       sendResponse(res, 500, "Failed", {
