@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
-const studentSchema = mongoose.Schema(
+const instituteSchema = mongoose.Schema(
   {
     Role: {
       type: Number,
-      default: 0,
+      default: 2,
     },
     ProfileImage: {
       type: String,
@@ -12,7 +12,16 @@ const studentSchema = mongoose.Schema(
     IDProof: {
       type: String,
     },
-    Name: {
+    Organization: {
+      type: String,
+    },
+    Institute: {
+      type: String,
+    },
+    InstituteName: {
+      type: String,
+    },
+    AdministratorName: {
       type: String,
     },
     MobileNumber: {
@@ -24,41 +33,17 @@ const studentSchema = mongoose.Schema(
     ConfirmPassword: {
       type: String,
     },
-    GuardianOrParentName: {
-      type: String,
-    },
     Email: {
       type: String,
     },
-    Gender: {
+    InstituteWebsite: {
       type: String,
     },
-    DateofBirth: {
-      type: String,
-    },
-    Education: {
-      type: String,
-    },
-    Class: {
-      type: String,
-    },
-    Syllabus: {
-      type: String,
-    },
-    Department: {
-      type: String,
-    },
-    Semester: {
-      type: String,
-    },
-    SchoolOrCollegeName: {
-      type: String,
-    },
-    SchoolOrCollegeAddress: {
+    InstituteAddress: {
       type: String,
     },
     Pincode: {
-      type: Number,
+      type: String,
     },
     Country: {
       type: String,
@@ -79,4 +64,4 @@ const studentSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Students", studentSchema);
+module.exports = mongoose.model("Institutes", instituteSchema);

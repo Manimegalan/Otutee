@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
-const studentSchema = mongoose.Schema(
+const teacherSchema = mongoose.Schema(
   {
     Role: {
       type: Number,
-      default: 0,
+      default: 1,
     },
     ProfileImage: {
       type: String,
@@ -24,9 +24,6 @@ const studentSchema = mongoose.Schema(
     ConfirmPassword: {
       type: String,
     },
-    GuardianOrParentName: {
-      type: String,
-    },
     Email: {
       type: String,
     },
@@ -36,7 +33,10 @@ const studentSchema = mongoose.Schema(
     DateofBirth: {
       type: String,
     },
-    Education: {
+    Qualification: {
+      type: String,
+    },
+    Designation: {
       type: String,
     },
     Class: {
@@ -45,10 +45,16 @@ const studentSchema = mongoose.Schema(
     Syllabus: {
       type: String,
     },
+    Course: {
+      type: String,
+    },
     Department: {
       type: String,
     },
     Semester: {
+      type: String,
+    },
+    Subjects: {
       type: String,
     },
     SchoolOrCollegeName: {
@@ -58,7 +64,7 @@ const studentSchema = mongoose.Schema(
       type: String,
     },
     Pincode: {
-      type: Number,
+      type: String,
     },
     Country: {
       type: String,
@@ -79,4 +85,4 @@ const studentSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Students", studentSchema);
+module.exports = mongoose.model("Teachers", teacherSchema);
