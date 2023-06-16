@@ -13,7 +13,6 @@ const {
   verifyJwtToken,
   sendOtp,
   generateOTP,
-  verifyOtp,
 } = require("../utils/common");
 
 studentController.post(
@@ -70,10 +69,66 @@ studentController.post(
       }
       data.Password = createHash(data.Password);
       data.ConfirmPassword = btoa(data.ConfirmPassword);
+      data.MobileNumberVerified = false;
       const studentCreated = await studentService.create(data);
       sendResponse(res, 200, "Success", {
         message: "Student registered successfully!",
         data: studentCreated,
+      });
+    } catch (error) {
+      console.log(error);
+      sendResponse(res, 500, "Failed", {
+        message: error.message || "Internal server error",
+      });
+    }
+  }
+);
+
+studentController.post(
+  "/verifyMobileNumber",
+  studentValidator.verifyMobileNumber(),
+  studentValidator.validate,
+  async (req, res) => {
+    try {
+      let otpIndex;
+      const { MobileNumber, OTP } = req.body;
+      const isMobileNumberExist = await studentService.findOne({
+        MobileNumber,
+      });
+      if (!isMobileNumberExist) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Incorrect Mobile number or Student not found!",
+        });
+      }
+      const otpData = isMobileNumberExist.otp.find((obj, index) => {
+        if (obj.code === OTP) {
+          otpIndex = index;
+          return true;
+        }
+      });
+      if (!otpData) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Invalid OTP!",
+        });
+      }
+      if (otpData.expired) {
+        return sendResponse(res, 400, "Failed", {
+          message: "OTP expired!",
+        });
+      }
+
+      await studentService.updateOne(
+        { _id: isMobileNumberExist._id },
+        {
+          $set: {
+            MobileNumberVerified: true,
+            [`otp.${otpIndex}.expired`]: true,
+          },
+        }
+      );
+
+      sendResponse(res, 200, "Success", {
+        message: "Mobile Number verified successfully!",
       });
     } catch (error) {
       console.log(error);
@@ -101,6 +156,11 @@ studentController.post(
       if (!isPasswordMatch) {
         return sendResponse(res, 400, "Failed", {
           message: "Incorrect password!",
+        });
+      }
+      if (!isEmailExist.MobileNumberVerified) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Please Verify your mobile number!",
         });
       }
       const { _id, Name, Role } = isEmailExist;

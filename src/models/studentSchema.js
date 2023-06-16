@@ -84,6 +84,9 @@ const studentSchema = mongoose.Schema(
     token: {
       type: String,
     },
+    MobileNumberVerified: {
+      type: Boolean,
+    },
     otp: [otpSchema],
   },
   { timestamps: true }
