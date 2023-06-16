@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const path = require("path");
 const crypto = require("crypto");
 const multer = require("multer");
+const fs = require("fs");
 const { S3Client } = require("@aws-sdk/client-s3");
 const multerS3 = require("multer-s3");
 
@@ -43,7 +44,9 @@ const upload = (location) =>
   multer({
     storage: multer.diskStorage({
       destination: function (req, file, cb) {
-        cb(null, `Public/${location}/`);
+        const folderPath = `Public/${location}/`;
+        fs.mkdirSync(folderPath, { recursive: true });
+        cb(null, folderPath);
       },
       filename: function (req, file, cb) {
         cb(
