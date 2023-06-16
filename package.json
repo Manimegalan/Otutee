@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=prod pm2 start index.js --name FriendbookServer",
-    "stage": "cross-env NODE_ENV=stage pm2 start index.js --name FriendbookServer",
+    "start": "cross-env NODE_ENV=prod pm2 start index.js --name Otutee",
+    "stage": "cross-env NODE_ENV=stage pm2 start index.js --name Otutee",
     "dev": "cross-env NODE_ENV=dev nodemon index.js"
   },
   "author": "",
