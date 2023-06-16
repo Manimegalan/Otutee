@@ -185,22 +185,42 @@ studentController.post(
   studentValidator.validate,
   async (req, res) => {
     try {
-      const { Email } = req.body;
-      const isEmailExist = await studentService.findOne({ Email });
-      if (!isEmailExist) {
+      const { Email, MobileNumber } = req.body;
+      const $or = [];
+      Email
+        ? $or.push({ Email })
+        : MobileNumber
+        ? $or.push({ MobileNumber })
+        : null;
+
+      const isUserExist = await studentService.findOne({ $or });
+      if (!isUserExist) {
         return sendResponse(res, 400, "Failed", {
-          message: "Incorrect email or Student not found!",
+          message: "Incorrect email/mobile number or teacher not found!",
         });
       }
-      const { _id, Name } = isEmailExist;
-      const resetLink =
-        process.env.FRONTEND_URL +
-        "/resetpassword/" +
-        createJwtToken({ _id, Name, Email }, "10m");
-      const info = await sendMail(resetLink);
+      let data;
+      const code = generateOTP();
+
+      if (req.body.Email) {
+        data = await sendMail(isUserExist.Email, code);
+      } else if (req.body.MobileNumber) {
+        const response = await sendOtp(MobileNumber, code);
+        data = response.data;
+      }
+
+      await studentService.updateOne(req.body, {
+        $push: {
+          otp: {
+            code,
+            expired: false,
+          },
+        },
+      });
+
       sendResponse(res, 200, "Success", {
-        message: "Email sent successfully!",
-        data: info,
+        message: "OTP sent successfully!",
+        data,
       });
     } catch (error) {
       console.log(error);
@@ -217,17 +237,54 @@ studentController.post(
   studentValidator.validate,
   async (req, res) => {
     try {
-      const { Password, ResetString } = req.body;
-      const decoded = verifyJwtToken(ResetString);
-      if (decoded) {
-        await studentService.updateOne(
-          { _id: decoded._id },
-          { Password: createHash(Password), ConfirmPassword: btoa(Password) }
-        );
-        sendResponse(res, 200, "Success", {
-          message: "Password reset successfully!",
+      const { Email, OTP, Password, ConfirmPassword } = req.body;
+      let otpIndex;
+      const $or = [];
+
+      Email
+        ? $or.push({ Email })
+        : MobileNumber
+        ? $or.push({ MobileNumber })
+        : null;
+
+      const isUserExist = await studentService.findOne({ $or });
+      if (!isUserExist) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Incorrect Email/Mobile number or Student not found!",
         });
       }
+
+      const otpData = isUserExist.otp.find((obj, index) => {
+        if (obj.code === OTP) {
+          otpIndex = index;
+          return true;
+        }
+      });
+      if (!otpData) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Invalid OTP!",
+        });
+      }
+      if (otpData.expired) {
+        return sendResponse(res, 400, "Failed", {
+          message: "OTP expired!",
+        });
+      }
+
+      await studentService.updateOne(
+        { _id: isUserExist._id },
+        {
+          $set: {
+            Password: createHash(Password),
+            ConfirmPassword: btoa(ConfirmPassword),
+            [`otp.${otpIndex}.expired`]: true,
+          },
+        }
+      );
+
+      sendResponse(res, 200, "Success", {
+        message: "Password reset successfully!",
+      });
     } catch (error) {
       console.log(error);
       sendResponse(res, 500, "Failed", {
@@ -289,16 +346,23 @@ studentController.post(
   async (req, res) => {
     try {
       let otpIndex;
-      const { MobileNumber, OTP } = req.body;
-      const isMobileNumberExist = await studentService.findOne({
-        MobileNumber,
-      });
-      if (!isMobileNumberExist) {
+      const { Email, MobileNumber, OTP } = req.body;
+      const $or = [];
+
+      Email
+        ? $or.push({ Email })
+        : MobileNumber
+        ? $or.push({ MobileNumber })
+        : null;
+
+      const isUserExist = await studentService.findOne({ $or });
+      if (!isUserExist) {
         return sendResponse(res, 400, "Failed", {
-          message: "Incorrect Mobile number or Student not found!",
+          message: "Incorrect Email/Mobile number or Student not found!",
         });
       }
-      const otpData = isMobileNumberExist.otp.find((obj, index) => {
+
+      const otpData = isUserExist.otp.find((obj, index) => {
         if (obj.code === OTP) {
           otpIndex = index;
           return true;
@@ -315,21 +379,8 @@ studentController.post(
         });
       }
 
-      const { _id, Name, Email, Role } = isMobileNumberExist;
-      const token = createJwtToken({ _id, Name, Email, Role }, "1d");
-      await studentService.updateOne(
-        { _id },
-        {
-          $set: {
-            token,
-            [`otp.${otpIndex}.expired`]: true,
-          },
-        }
-      );
-
       sendResponse(res, 200, "Success", {
-        message: "OTP verified & Logged in successfully!",
-        data: { _id, Email, Name, token },
+        message: "OTP verified successfully!",
       });
     } catch (error) {
       console.log(error);

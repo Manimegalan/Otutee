@@ -32,7 +32,7 @@ exports.verifyJwtToken = (data) => {
   return jwt.verify(data, process.env.JWT_KEY);
 };
 
-exports.sendMail = async (data) => {
+exports.sendMail = async (Email, code) => {
   let transporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
     port: 587,
@@ -44,10 +44,10 @@ exports.sendMail = async (data) => {
   });
   const info = await transporter.sendMail({
     from: '"Fred Foo 👻" <manimegalan@gmail.com>',
-    to: "manimegalan@gmail.com",
+    to: Email,
     subject: "Reset password",
     text: "Reset password",
-    html: `<b>${data}</b>`,
+    html: `<b>Dear Customer, ${code} is the OTP to register as a Customer. OTPs are secret. Please DO NOT disclose it to anyone. Team Mitrakart</b>`,
   });
   return info;
 };

@@ -1,4 +1,4 @@
-const { body, validationResult } = require("express-validator");
+const { body, oneOf, validationResult } = require("express-validator");
 
 const register = () => {
   return [
@@ -37,13 +37,17 @@ const signin = () => {
 };
 
 const forgotPassword = () => {
-  return [body("Email").not().isEmpty().isEmail()];
+  return [
+    oneOf([body("Email").exists().isEmail(), body("MobileNumber").exists()]),
+  ];
 };
 
 const resetPassword = () => {
   return [
+    body("Email").not().isEmpty(),
+    body("OTP").not().isEmpty(),
     body("Password").not().isEmpty(),
-    body("ResetString").not().isEmpty(),
+    body("ConfirmPassword").not().isEmpty(),
   ];
 };
 
@@ -52,7 +56,9 @@ const sendOtp = () => {
 };
 
 const verifyOtp = () => {
-  return [body("MobileNumber").not().isEmpty(), body("OTP").not().isEmpty()];
+  return [
+    oneOf([body("Email").exists().isEmail(), body("MobileNumber").exists()]),
+  ];
 };
 
 const validate = (req, res, next) => {
