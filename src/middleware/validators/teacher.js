@@ -27,6 +27,10 @@ const register = () => {
   ];
 };
 
+const verifyMobileNumber = () => {
+  return [body("MobileNumber").not().isEmpty(), body("OTP").not().isEmpty()];
+};
+
 const signin = () => {
   return [
     body("Email").not().isEmpty().isEmail(),
@@ -69,6 +73,7 @@ const validate = (req, res, next) => {
 
 module.exports = {
   register,
+  verifyMobileNumber,
   signin,
   forgotPassword,
   resetPassword,

@@ -69,6 +69,9 @@ const instituteSchema = mongoose.Schema(
     token: {
       type: String,
     },
+    MobileNumberVerified: {
+      type: Boolean,
+    },
     otp: [otpSchema],
   },
   { timestamps: true }

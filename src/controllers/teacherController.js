@@ -71,10 +71,66 @@ teacherController.post(
       }
       data.Password = createHash(data.Password);
       data.ConfirmPassword = btoa(data.ConfirmPassword);
+      data.MobileNumberVerified = false;
       const teacherCreated = await teacherService.create(data);
       sendResponse(res, 200, "Success", {
         message: "Teacher registered successfully!",
         data: teacherCreated,
+      });
+    } catch (error) {
+      console.log(error);
+      sendResponse(res, 500, "Failed", {
+        message: error.message || "Internal server error",
+      });
+    }
+  }
+);
+
+teacherController.post(
+  "/verifyMobileNumber",
+  teacherValidator.verifyMobileNumber(),
+  teacherValidator.validate,
+  async (req, res) => {
+    try {
+      let otpIndex;
+      const { MobileNumber, OTP } = req.body;
+      const isMobileNumberExist = await teacherService.findOne({
+        MobileNumber,
+      });
+      if (!isMobileNumberExist) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Incorrect Mobile number or Teacher not found!",
+        });
+      }
+      const otpData = isMobileNumberExist.otp.find((obj, index) => {
+        if (obj.code === OTP) {
+          otpIndex = index;
+          return true;
+        }
+      });
+      if (!otpData) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Invalid OTP!",
+        });
+      }
+      if (otpData.expired) {
+        return sendResponse(res, 400, "Failed", {
+          message: "OTP expired!",
+        });
+      }
+
+      await teacherService.updateOne(
+        { _id: isMobileNumberExist._id },
+        {
+          $set: {
+            MobileNumberVerified: true,
+            [`otp.${otpIndex}.expired`]: true,
+          },
+        }
+      );
+
+      sendResponse(res, 200, "Success", {
+        message: "Mobile Number verified successfully!",
       });
     } catch (error) {
       console.log(error);
@@ -102,6 +158,11 @@ teacherController.post(
       if (!isPasswordMatch) {
         return sendResponse(res, 400, "Failed", {
           message: "Incorrect password!",
+        });
+      }
+      if (!isEmailExist.MobileNumberVerified) {
+        return sendResponse(res, 400, "Failed", {
+          message: "Please Verify your mobile number!",
         });
       }
       const { _id, Name, Role } = isEmailExist;
