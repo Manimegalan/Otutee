@@ -1,64 +1,61 @@
 const mongoose = require("mongoose");
 
-const educationSchema = mongoose.Schema(
-  {
-    School: [
+const schemaCategories = {
+  School: {
+    Name: {
+      type: String,
+    },
+    Classes: [
       {
-        Classes: [
+        Name: {
+          type: String,
+        },
+        Subjects: [
           {
             Name: {
               type: String,
             },
-            Syllabuses: [
+            Chapters: [
               {
                 Name: {
                   type: String,
                 },
-                Subjects: [
+                Posts: [
                   {
                     Name: {
                       type: String,
                     },
-                    Chapters: [
+                    Author: {
+                      type: mongoose.Schema.Types.ObjectId,
+                      ref: "Users",
+                      required: true,
+                    },
+                    type: {
+                      type: String,
+                    },
+                    Content: [
                       {
-                        Name: {
+                        Language: {
                           type: String,
                         },
-                        Posts: [
-                          {
-                            Name: {
-                              type: String,
-                            },
-                            Author: {
-                              type: mongoose.Schema.Types.ObjectId,
-                              ref: "Students",
-                              required: true,
-                            },
-                            type: { type: String, enum: ["public", "friends"] },
-                            Content: {
-                              text: {
-                                type: String,
-                              },
-                              url: {
-                                type: String,
-                              },
-                            },
-                            Likes: [
-                              {
-                                type: mongoose.Schema.Types.ObjectId,
-                                ref: "Students",
-                              },
-                            ],
-                            Comments: [
-                              {
-                                type: mongoose.Schema.Types.ObjectId,
-                                ref: "Comment",
-                              },
-                            ],
-                          },
-                        ],
+                        Type: {
+                          type: String,
+                        },
+                        Data: {
+                          type: String,
+                        },
                       },
                     ],
+                    Likes: {
+                      type: mongoose.Schema.Types.ObjectId,
+                      ref: "Users",
+                      required: true,
+                    },
+                    Comments: {
+                      type: mongoose.Schema.Types.ObjectId,
+                      ref: "Users",
+                      required: true,
+                    },
                   },
                 ],
               },
@@ -67,35 +64,66 @@ const educationSchema = mongoose.Schema(
         ],
       },
     ],
-    Engineering: [
+  },
+  College: {
+    Name: {
+      type: String,
+    },
+    Departments: [
       {
-        Departments: [
+        Name: {
+          type: String,
+        },
+        Semesters: [
           {
-            Name: {
+            name: {
               type: String,
             },
-            Semesters: [
+            Subjects: [
               {
                 Name: {
                   type: String,
                 },
-                Subjects: [
+                Chapters: [
                   {
                     Name: {
                       type: String,
                     },
-                    Chapters: [
+                    Posts: [
                       {
                         Name: {
                           type: String,
                         },
-                        Content: {
-                          text: {
-                            type: String,
+                        Author: {
+                          type: mongoose.Schema.Types.ObjectId,
+                          ref: "Users",
+                          required: true,
+                        },
+                        type: {
+                          type: String,
+                        },
+                        Content: [
+                          {
+                            Language: {
+                              type: String,
+                            },
+                            Type: {
+                              type: String,
+                            },
+                            Data: {
+                              type: String,
+                            },
                           },
-                          url: {
-                            type: String,
-                          },
+                        ],
+                        Likes: {
+                          type: mongoose.Schema.Types.ObjectId,
+                          ref: "Users",
+                          required: true,
+                        },
+                        Comments: {
+                          type: mongoose.Schema.Types.ObjectId,
+                          ref: "Users",
+                          required: true,
                         },
                       },
                     ],
@@ -108,7 +136,17 @@ const educationSchema = mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
-);
+};
 
-module.exports = mongoose.model("Educations", educationSchema);
+const schoolSchema = mongoose.Schema(schemaCategories["School"], {
+  timestamps: true,
+});
+
+const collegeSchema = mongoose.Schema(schemaCategories["College"], {
+  timestamps: true,
+});
+
+module.exports = {
+  schoolModel: mongoose.model("School", schoolSchema, "educations"),
+  collegeModel: mongoose.model("College", collegeSchema, "educations"),
+};
