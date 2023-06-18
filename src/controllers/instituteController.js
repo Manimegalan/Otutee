@@ -3,14 +3,13 @@ const instituteController = express.Router();
 
 const { upload } = require("../middleware/common");
 const instituteValidator = require("../middleware/validators/institute");
-const instituteService = require("../services/instituteService");
+const instituteService = require("../services/userService");
 const {
   sendResponse,
   createHash,
   compareHash,
   createJwtToken,
   sendMail,
-  verifyJwtToken,
   generateOTP,
   sendOtp,
 } = require("../utils/common");
@@ -23,7 +22,7 @@ instituteController.post(
   async (req, res) => {
     try {
       const data = {
-        Role: 2,
+        Role: "institute",
         ProfileImage: req.files[0]?.filename,
         IDProof: req.files[1]?.filename,
         Organization: req.body.Organization,
@@ -67,10 +66,12 @@ instituteController.post(
       data.Password = createHash(data.Password);
       data.ConfirmPassword = btoa(data.ConfirmPassword);
       data.MobileNumberVerified = false;
-      const teacherCreated = await instituteService.create(data);
+      const instituteCreated = await instituteService.create(data);
+      instituteCreated.set("Password", undefined);
+      instituteCreated.set("ConfirmPassword", undefined);
       sendResponse(res, 200, "Success", {
         message: "Institute registered successfully!",
-        data: teacherCreated,
+        data: instituteCreated,
       });
     } catch (error) {
       console.log(error);
@@ -165,7 +166,7 @@ instituteController.post(
       await instituteService.updateOne({ _id }, { token });
       sendResponse(res, 200, "Success", {
         message: "Logged in successfully!",
-        data: { _id, Email, Name, token },
+        data: { token, _id, Email, Name, Role },
       });
     } catch (error) {
       console.log(error);
@@ -234,7 +235,7 @@ instituteController.post(
   instituteValidator.validate,
   async (req, res) => {
     try {
-      const { Email, OTP, Password, ConfirmPassword } = req.body;
+      const { Email, MobileNumber, OTP, Password, ConfirmPassword } = req.body;
       let otpIndex;
       const $or = [];
 

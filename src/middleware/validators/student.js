@@ -44,7 +44,7 @@ const forgotPassword = () => {
 
 const resetPassword = () => {
   return [
-    body("Email").not().isEmpty(),
+    oneOf([body("Email").exists().isEmail(), body("MobileNumber").exists()]),
     body("OTP").not().isEmpty(),
     body("Password").not().isEmpty(),
     body("ConfirmPassword").not().isEmpty(),

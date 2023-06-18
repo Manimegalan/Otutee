@@ -3,14 +3,13 @@ const teacherController = express.Router();
 
 const { upload } = require("../middleware/common");
 const teacherValidator = require("../middleware/validators/teacher");
-const teacherService = require("../services/teacherService");
+const teacherService = require("../services/userService");
 const {
   sendResponse,
   createHash,
   compareHash,
   createJwtToken,
   sendMail,
-  verifyJwtToken,
   generateOTP,
   sendOtp,
 } = require("../utils/common");
@@ -23,7 +22,7 @@ teacherController.post(
   async (req, res) => {
     try {
       const data = {
-        Role: 1,
+        Role: "teacher",
         ProfileImage: req.files[0]?.filename,
         IDProof: req.files[1]?.filename,
         Name: req.body.Name,
@@ -73,6 +72,8 @@ teacherController.post(
       data.ConfirmPassword = btoa(data.ConfirmPassword);
       data.MobileNumberVerified = false;
       const teacherCreated = await teacherService.create(data);
+      teacherCreated.set("Password", undefined);
+      teacherCreated.set("ConfirmPassword", undefined);
       sendResponse(res, 200, "Success", {
         message: "Teacher registered successfully!",
         data: teacherCreated,
@@ -170,7 +171,7 @@ teacherController.post(
       await teacherService.updateOne({ _id }, { token });
       sendResponse(res, 200, "Success", {
         message: "Logged in successfully!",
-        data: { _id, Email, Name, token },
+        data: { token, _id, Email, Name, Role },
       });
     } catch (error) {
       console.log(error);
@@ -240,7 +241,7 @@ teacherController.post(
   teacherValidator.validate,
   async (req, res) => {
     try {
-      const { Email, OTP, Password, ConfirmPassword } = req.body;
+      const { Email, MobileNumber, OTP, Password, ConfirmPassword } = req.body;
       let otpIndex;
       const $or = [];
 
