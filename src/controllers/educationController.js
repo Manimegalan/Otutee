@@ -61,4 +61,19 @@ educationController.post(
   }
 );
 
+educationController.get("/list", async (req, res) => {
+  try {
+    const data = await educationService.educationList();
+    sendResponse(res, 200, "Success", {
+      message: "Educations retrieved successfully!",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
+
 module.exports = educationController;
