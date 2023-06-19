@@ -11,3 +11,11 @@ exports.collegeCreate = async (query) => {
 exports.educationList = async () => {
   return await Education.schoolModel.find();
 };
+
+exports.schoolUpdateOne = async (query, data, filters) => {
+  return await Education.schoolModel.updateOne(query, data, filters)
+}
+
+exports.collegeUpdateOne = async(query, data, filters)=>{
+  return await Education.collegeModel.updateOne(query, data, filters)
+}
