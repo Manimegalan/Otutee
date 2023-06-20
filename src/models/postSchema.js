@@ -4,20 +4,18 @@ const postSchema = mongoose.Schema({
   Name: {
     type: String,
   },
+  type: {
+    type: String,
+    enum: ["Private", "Public"],
+  },
   Author: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Users",
     required: true,
   },
-  type: {
-    type: String,
-  },
   Content: [
     {
       Language: {
-        type: String,
-      },
-      Type: {
         type: String,
       },
       Data: {

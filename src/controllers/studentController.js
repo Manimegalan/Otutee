@@ -164,12 +164,12 @@ studentController.post(
           message: "Please Verify your mobile number!",
         });
       }
-      const { _id, Name, Role } = isEmailExist;
+      const { _id, Name, Role, Education, Class } = isEmailExist;
       const token = createJwtToken({ _id, Name, Email, Role }, "1d");
       await studentService.updateOne({ _id }, { token });
       sendResponse(res, 200, "Success", {
         message: "Logged in successfully!",
-        data: { token, _id, Email, Name, Role },
+        data: { token, _id, Email, Name, Role, Education, Class },
       });
     } catch (error) {
       console.log(error);

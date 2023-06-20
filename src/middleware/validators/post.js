@@ -1,7 +1,12 @@
 const { body, validationResult } = require("express-validator");
 
 const create = () => {
-  return [body("MobileNumber").not().isEmpty()];
+  return [
+    body("Name").notEmpty(),
+    body("type").notEmpty(),
+    body("Content.*.Language").notEmpty(),
+    body("Content.*.Data").notEmpty(),
+  ];
 };
 
 const validate = (req, res, next) => {

@@ -53,42 +53,7 @@ const schemaCategories = {
                       type: String,
                     },
                     Posts: [
-                      {
-                        Name: {
-                          type: String,
-                        },
-                        Author: {
-                          type: mongoose.Schema.Types.ObjectId,
-                          ref: "Users",
-                          required: true,
-                        },
-                        type: {
-                          type: String,
-                        },
-                        Content: [
-                          {
-                            Language: {
-                              type: String,
-                            },
-                            Type: {
-                              type: String,
-                            },
-                            Data: {
-                              type: String,
-                            },
-                          },
-                        ],
-                        Likes: {
-                          type: mongoose.Schema.Types.ObjectId,
-                          ref: "Users",
-                          required: true,
-                        },
-                        Comments: {
-                          type: mongoose.Schema.Types.ObjectId,
-                          ref: "Users",
-                          required: true,
-                        },
-                      },
+                      { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
                     ],
                   },
                 ],
