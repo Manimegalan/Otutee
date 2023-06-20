@@ -2,6 +2,10 @@ const { body, validationResult } = require("express-validator");
 
 const create = () => {
   return [
+    body("EducationId").notEmpty(),
+    body("ClassId").notEmpty(),
+    body("SubjectId").notEmpty(),
+    body("ChapterId").notEmpty(),
     body("Name").notEmpty(),
     body("type").notEmpty(),
     body("Content.*.Language").notEmpty(),

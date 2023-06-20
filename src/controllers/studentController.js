@@ -165,7 +165,10 @@ studentController.post(
         });
       }
       const { _id, Name, Role, Education, Class } = isEmailExist;
-      const token = createJwtToken({ _id, Name, Email, Role }, "1d");
+      const token = createJwtToken(
+        { _id, Name, Email, Role, Education, Class },
+        "1d"
+      );
       await studentService.updateOne({ _id }, { token });
       sendResponse(res, 200, "Success", {
         message: "Logged in successfully!",
