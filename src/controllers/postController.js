@@ -8,14 +8,12 @@ const { sendResponse } = require("../utils/common");
 
 postController.post(
   "/create",
-  postValidator.create(),
-  postValidator.validate,
   async (req, res) => {
     try {
       req.body.Author = req.user._id;
       const postRespose = await postService.create(req.body);
       let response;
-      if (req.user.Role === "student") {
+      if (req.user.EducationType === "School") {
         const { EducationId, ClassId, SubjectId, ChapterId } = req.body;
         const query = {
           _id: EducationId,
@@ -40,7 +38,7 @@ postController.post(
           ],
         };
         response = await educationService.schoolUpdateOne(query, data, filters);
-      } else if (req.user.Role === "teacher") {
+      } else if (req.user.EducationType === "College") {
         const { EducationId, DepartmentId, SemesterId, SubjectId, ChapterId } =
           req.body;
         const query = {

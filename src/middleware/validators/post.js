@@ -1,17 +1,34 @@
 const { body, validationResult } = require("express-validator");
 
-const create = () => {
-  return [
-    body("EducationId").notEmpty(),
-    body("ClassId").notEmpty(),
-    body("SubjectId").notEmpty(),
-    body("ChapterId").notEmpty(),
-    body("Name").notEmpty(),
-    body("type").notEmpty(),
-    body("Content.*.Language").notEmpty(),
-    body("Content.*.Data").notEmpty(),
-  ];
-};
+const create = (req, res, next) => {
+  let array;
+  if(req.user.EducationType === "School"){
+    array = [
+      body("EducationId").notEmpty(),
+      body("ClassId").notEmpty(),
+      body("SubjectId").notEmpty(),
+      body("ChapterId").notEmpty(),
+      body("Name").notEmpty(),
+      body("type").notEmpty(),
+      body("Content.*.Language").notEmpty(),
+      body("Content.*.Data").notEmpty(),
+    ]
+  }else if(req.user.EducationType === "College"){
+    array = [
+      body("EducationId").notEmpty(),
+      body("DepartmentId").notEmpty(),
+      body("SemesterId").notEmpty(),
+      body("SubjectId").notEmpty(),
+      body("ChapterId").notEmpty(),
+      body("Name").notEmpty(),
+      body("type").notEmpty(),
+      body("Content.*.Language").notEmpty(),
+      body("Content.*.Data").notEmpty(),
+    ]
+  }
+  array.forEach(rule => rule(req))
+  next();
+}
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
