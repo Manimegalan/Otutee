@@ -12,6 +12,10 @@ exports.educationList = async () => {
   return await Education.schoolModel.find();
 };
 
+exports.findOne = async (query) => {
+  return await Education.schoolModel.findOne(query);
+};
+
 exports.schoolUpdateOne = async (query, data, filters) => {
   return await Education.schoolModel.updateOne(query, data, filters)
 }

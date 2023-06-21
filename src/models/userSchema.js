@@ -60,6 +60,9 @@ const userSchema = mongoose.Schema(
     Education: {
       type: String,
     },
+    EducationType: {
+      type: String,
+    },
     Qualification: {
       type: String,
     },

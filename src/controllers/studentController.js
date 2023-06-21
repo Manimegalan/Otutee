@@ -4,6 +4,7 @@ const studentController = express.Router();
 const { upload } = require("../middleware/common");
 const studentValidator = require("../middleware/validators/student");
 const studentService = require("../services/userService");
+const educationService = require("../services/educationService");
 const {
   sendResponse,
   createHash,
@@ -66,6 +67,10 @@ studentController.post(
             "MobileNumber already exist! Please register with another MobileNumber",
         });
       }
+      const educationRes = await educationService.findOne({
+        _id: req.body.Education,
+      });
+      data.EducationType = educationRes.Type;
       data.Password = createHash(data.Password);
       data.ConfirmPassword = btoa(data.ConfirmPassword);
       data.MobileNumberVerified = false;
@@ -164,9 +169,9 @@ studentController.post(
           message: "Please Verify your mobile number!",
         });
       }
-      const { _id, Name, Role, Education, Class } = isEmailExist;
+      const { _id, Name, Role, Education, EducationType, Class } = isEmailExist;
       const token = createJwtToken(
-        { _id, Name, Email, Role, Education, Class },
+        { _id, Name, Email, Role, Education, EducationType, Class },
         "1d"
       );
       await studentService.updateOne({ _id }, { token });

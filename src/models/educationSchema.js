@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const schemaCategories = {
   School: {
+    Type: {
+      type: String,
+      default: "School",
+    },
     Name: {
       type: String,
     },
@@ -29,6 +33,10 @@ const schemaCategories = {
     ],
   },
   College: {
+    Type: {
+      type: String,
+      default: "College",
+    },
     Name: {
       type: String,
     },

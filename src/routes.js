@@ -13,7 +13,7 @@ router.use("/user/student", studentController);
 router.use("/user/teacher", teacherController);
 router.use("/user/institute", instituteController);
 
-router.use("/education", auth, educationController);
+router.use("/education", educationController);
 
 router.use("/post", auth, postController);
 
