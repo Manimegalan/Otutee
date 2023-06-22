@@ -2,7 +2,7 @@ const { body, validationResult } = require("express-validator");
 
 const create = (req, res, next) => {
   let array;
-  if(req.user.EducationType === "School"){
+  if (req.user.EducationType === "School") {
     array = [
       body("EducationId").notEmpty(),
       body("ClassId").notEmpty(),
@@ -12,8 +12,8 @@ const create = (req, res, next) => {
       body("type").notEmpty(),
       body("Content.*.Language").notEmpty(),
       body("Content.*.Data").notEmpty(),
-    ]
-  }else if(req.user.EducationType === "College"){
+    ];
+  } else if (req.user.EducationType === "College") {
     array = [
       body("EducationId").notEmpty(),
       body("DepartmentId").notEmpty(),
@@ -24,11 +24,25 @@ const create = (req, res, next) => {
       body("type").notEmpty(),
       body("Content.*.Language").notEmpty(),
       body("Content.*.Data").notEmpty(),
-    ]
+    ];
   }
-  array.forEach(rule => rule(req))
+  array.forEach((rule) => rule(req));
   next();
-}
+};
+
+const update = () => {
+  return [
+    body("PostId").notEmpty(),
+    body("Name").notEmpty(),
+    body("type").notEmpty(),
+    body("Content.*.Language").notEmpty(),
+    body("Content.*.Data").notEmpty(),
+  ];
+};
+
+const deletePost = () => {
+  return [body("PostId").notEmpty()];
+};
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -46,5 +60,7 @@ const validate = (req, res, next) => {
 
 module.exports = {
   create,
+  update,
+  deletePost,
   validate,
 };
