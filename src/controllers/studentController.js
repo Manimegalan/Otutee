@@ -153,7 +153,7 @@ studentController.post(
     try {
       const { Email, Password } = req.body;
       const isEmailExist = await studentService.findOne({ Email });
-      if (!isEmailExist) {
+      if (!isEmailExist || isEmailExist.Role !== "student") {
         return sendResponse(res, 400, "Failed", {
           message: "Incorrect email or Student not found!",
         });

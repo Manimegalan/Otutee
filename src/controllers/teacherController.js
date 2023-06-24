@@ -150,7 +150,7 @@ teacherController.post(
     try {
       const { Email, Password } = req.body;
       const isEmailExist = await teacherService.findOne({ Email });
-      if (!isEmailExist) {
+      if (!isEmailExist || isEmailExist.Role !== "teacher") {
         return sendResponse(res, 400, "Failed", {
           message: "Incorrect email or teacher not found!",
         });

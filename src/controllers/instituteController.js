@@ -145,7 +145,7 @@ instituteController.post(
     try {
       const { Email, Password } = req.body;
       const isEmailExist = await instituteService.findOne({ Email });
-      if (!isEmailExist) {
+      if (!isEmailExist || isEmailExist.Role !== "institute") {
         return sendResponse(res, 400, "Failed", {
           message: "Incorrect email or institute not found!",
         });
