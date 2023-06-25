@@ -1,10 +1,11 @@
 const express = require("express");
 const studentController = express.Router();
 
-const { upload } = require("../middleware/common");
+const { upload, auth } = require("../middleware/common");
 const studentValidator = require("../middleware/validators/student");
 const studentService = require("../services/userService");
 const educationService = require("../services/educationService");
+
 const {
   sendResponse,
   createHash,
@@ -17,15 +18,18 @@ const {
 
 studentController.post(
   "/register",
-  upload("student").any("files"),
+  upload("Student").fields([
+    { name: "ProfileImage", maxCount: 1 },
+    { name: "IdProof", maxCount: 1 },
+  ]),
   studentValidator.register(),
   studentValidator.validate,
   async (req, res) => {
     try {
       const data = {
         Role: "student",
-        ProfileImage: req.files[0]?.filename,
-        IDProof: req.files[1]?.filename,
+        ProfileImage: req.files?.["ProfileImage"]?.[0]?.filename,
+        IDProof: req.files?.["IdProof"]?.[0]?.filename,
         Name: req.body.Name,
         MobileNumber: req.body.MobileNumber,
         Password: req.body.Password,
@@ -47,11 +51,6 @@ studentController.post(
         District: req.body.District,
         Language: req.body.Language,
       };
-      if (!req.files[1]) {
-        return sendResponse(res, 400, "Failed", {
-          message: "Please upload ProfileImage and IDProof",
-        });
-      }
       const isEmailExist = await studentService.findOne({ Email: data.Email });
       if (isEmailExist) {
         return sendResponse(res, 400, "Failed", {
@@ -390,6 +389,65 @@ studentController.post(
 
       sendResponse(res, 200, "Success", {
         message: "OTP verified successfully!",
+      });
+    } catch (error) {
+      console.log(error);
+      sendResponse(res, 500, "Failed", {
+        message: error.message || "Internal server error",
+      });
+    }
+  }
+);
+
+studentController.post(
+  "/update",
+  auth,
+  upload("Student").fields([
+    { name: "ProfileImage", maxCount: 1 },
+    { name: "IdProof", maxCount: 1 },
+  ]),
+  studentValidator.update(),
+  studentValidator.validate,
+  async (req, res) => {
+    try {
+      const { _id } = req.user;
+      const data = {
+        ProfileImage: req.files["ProfileImage"]?.[0]?.filename,
+        IDProof: req.files["IdProof"]?.[0]?.filename,
+        Name: req.body.Name,
+        // MobileNumber: req.body.MobileNumber,
+        // Email: req.body.Email,
+        Password: req.body.Password,
+        ConfirmPassword: req.body.ConfirmPassword,
+        GuardianOrParentName: req.body.GuardianOrParentName,
+        Gender: req.body.Gender,
+        DateofBirth: req.body.DateofBirth,
+        Education: req.body.Education,
+        Class: req.body.Class,
+        Syllabus: req.body.Syllabus,
+        Department: req.body.Department,
+        Semester: req.body.Semester,
+        SchoolOrCollegeName: req.body.SchoolOrCollegeName,
+        SchoolOrCollegeAddress: req.body.SchoolOrCollegeAddress,
+        Pincode: req.body.Pincode,
+        Country: req.body.Country,
+        State: req.body.State,
+        District: req.body.District,
+        Language: req.body.Language,
+      };
+      const isUserExist = await studentService.findOne({ _id });
+      if (!isUserExist || isUserExist.Role !== "student") {
+        return sendResponse(res, 400, "Failed", {
+          message: "Incorrect email or Student not found!",
+        });
+      }
+      data.Password && (data.Password = createHash(data.Password));
+      data.ConfirmPassword &&
+        (data.ConfirmPassword = btoa(data.ConfirmPassword));
+      const studentCreated = await studentService.updateOne({ _id }, data);
+      sendResponse(res, 200, "Success", {
+        message: "Student updated successfully!",
+        data: studentCreated,
       });
     } catch (error) {
       console.log(error);

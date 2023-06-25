@@ -56,6 +56,26 @@ const verifyOtp = () => {
   ];
 };
 
+const update = () => {
+  return [
+    body("Organization"),
+    body("Institute"),
+    body("InstituteName"),
+    body("AdministratorName"),
+    body("MobileNumber"),
+    body("Password"),
+    body("ConfirmPassword"),
+    body("Email").optional().isEmail(),
+    body("InstituteWebsite"),
+    body("InstituteAddress"),
+    body("Pincode"),
+    body("Country"),
+    body("State"),
+    body("District"),
+    body("Language"),
+  ];
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (errors.isEmpty()) {
@@ -78,5 +98,6 @@ module.exports = {
   resetPassword,
   sendOtp,
   verifyOtp,
+  update,
   validate,
 };

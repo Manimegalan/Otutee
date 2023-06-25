@@ -75,9 +75,6 @@ const userSchema = mongoose.Schema(
     Syllabus: {
       type: String,
     },
-    Course: {
-      type: String,
-    },
     Department: {
       type: String,
     },

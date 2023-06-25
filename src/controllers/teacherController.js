@@ -1,7 +1,7 @@
 const express = require("express");
 const teacherController = express.Router();
 
-const { upload } = require("../middleware/common");
+const { upload, auth } = require("../middleware/common");
 const teacherValidator = require("../middleware/validators/teacher");
 const teacherService = require("../services/userService");
 const {
@@ -16,15 +16,18 @@ const {
 
 teacherController.post(
   "/register",
-  upload("Teacher").any("files"),
+  upload("Teacher").fields([
+    { name: "ProfileImage", maxCount: 1 },
+    { name: "IdProof", maxCount: 1 },
+  ]),
   teacherValidator.register(),
   teacherValidator.validate,
   async (req, res) => {
     try {
       const data = {
         Role: "teacher",
-        ProfileImage: req.files[0]?.filename,
-        IDProof: req.files[1]?.filename,
+        ProfileImage: req.files["ProfileImage"]?.[0]?.filename,
+        IDProof: req.files["IdProof"]?.[0]?.filename,
         Name: req.body.Name,
         MobileNumber: req.body.MobileNumber,
         Password: req.body.Password,
@@ -34,9 +37,9 @@ teacherController.post(
         DateofBirth: req.body.DateofBirth,
         Qualification: req.body.Qualification,
         Designation: req.body.Designation,
+        Education: req.body.Education,
         Class: req.body.Class,
         Syllabus: req.body.Syllabus,
-        Course: req.body.Course,
         Department: req.body.Department,
         Semester: req.body.Semester,
         Subjects: req.body.Subjects,
@@ -48,11 +51,6 @@ teacherController.post(
         District: req.body.District,
         Language: req.body.Language,
       };
-      if (!req.files[1]) {
-        return sendResponse(res, 400, "Failed", {
-          message: "Please upload ProfileImage and IDProof",
-        });
-      }
       const isEmailExist = await teacherService.findOne({ Email: data.Email });
       if (isEmailExist) {
         return sendResponse(res, 400, "Failed", {
@@ -386,6 +384,69 @@ teacherController.post(
 
       sendResponse(res, 200, "Success", {
         message: "OTP verified successfully!",
+      });
+    } catch (error) {
+      console.log(error);
+      sendResponse(res, 500, "Failed", {
+        message: error.message || "Internal server error",
+      });
+    }
+  }
+);
+
+teacherController.post(
+  "/update",
+  auth,
+  upload("Teacher").fields([
+    { name: "ProfileImage", maxCount: 1 },
+    { name: "IdProof", maxCount: 1 },
+  ]),
+  teacherValidator.update(),
+  teacherValidator.validate,
+  async (req, res) => {
+    try {
+      const { _id } = req.user;
+      const data = {
+        ProfileImage: req.files["ProfileImage"]?.[0]?.filename,
+        IDProof: req.files["IdProof"]?.[0]?.filename,
+        Name: req.body.Name,
+        // MobileNumber: req.body.MobileNumber,
+        // Email: req.body.Email,
+        Password: req.body.Password,
+        ConfirmPassword: req.body.ConfirmPassword,
+        Gender: req.body.Gender,
+        DateofBirth: req.body.DateofBirth,
+        Qualification: req.body.Qualification,
+        Designation: req.body.Designation,
+        Education: req.body.Education,
+        Class: req.body.Class,
+        Syllabus: req.body.Syllabus,
+        Department: req.body.Department,
+        Semester: req.body.Semester,
+        Subjects: req.body.Subjects,
+        SchoolOrCollegeName: req.body.SchoolOrCollegeName,
+        SchoolOrCollegeAddress: req.body.SchoolOrCollegeAddress,
+        Pincode: req.body.Pincode,
+        Country: req.body.Country,
+        State: req.body.State,
+        District: req.body.District,
+        Language: req.body.Language,
+      };
+      const isUserExist = await teacherService.findOne({ _id });
+      if (!isUserExist || isUserExist.Role !== "teacher") {
+        return sendResponse(res, 400, "Failed", {
+          message: "Incorrect email or Teacher not found!",
+        });
+      }
+
+      data.Password && (data.Password = createHash(data.Password));
+      data.ConfirmPassword &&
+        (data.ConfirmPassword = btoa(data.ConfirmPassword));
+
+      const teacherCreated = await teacherService.updateOne({ _id }, data);
+      sendResponse(res, 200, "Success", {
+        message: "Teacher updated successfully!",
+        data: teacherCreated,
       });
     } catch (error) {
       console.log(error);

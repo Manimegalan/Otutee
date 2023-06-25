@@ -11,9 +11,9 @@ const register = () => {
     body("DateofBirth").not().isEmpty(),
     body("Qualification").not().isEmpty(),
     body("Designation").not().isEmpty().isIn(["Teacher", "Professor"]),
+    body("Education").not().isEmpty(),
     body("Class"),
     body("Syllabus"),
-    body("Course"),
     body("Department"),
     body("Semester"),
     body("Subjects"),
@@ -63,6 +63,33 @@ const verifyOtp = () => {
   ];
 };
 
+const update = () => {
+  return [
+    body("Name"),
+    body("MobileNumber"),
+    body("Password"),
+    body("ConfirmPassword"),
+    body("Email").optional().isEmail(),
+    body("Gender").optional().isIn(["male", "female"]),
+    body("DateofBirth"),
+    body("Qualification"),
+    body("Designation").optional().isIn(["Teacher", "Professor"]),
+    body("Class"),
+    body("Syllabus"),
+    body("Course"),
+    body("Department"),
+    body("Semester"),
+    body("Subjects"),
+    body("SchoolOrCollegeName"),
+    body("SchoolOrCollegeAddress"),
+    body("Pincode"),
+    body("Country"),
+    body("State"),
+    body("District"),
+    body("Language"),
+  ];
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (errors.isEmpty()) {
@@ -85,5 +112,6 @@ module.exports = {
   resetPassword,
   sendOtp,
   verifyOtp,
+  update,
   validate,
 };

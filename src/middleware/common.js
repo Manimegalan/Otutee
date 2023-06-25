@@ -40,21 +40,16 @@ const fileFilter = (req, file, cb) => {
 
 // Local Storage
 
-const upload = (location) =>
+const localUpload = (location) =>
   multer({
     storage: multer.diskStorage({
       destination: function (req, file, cb) {
-        const folderPath = `Public/${location}/`;
+        const folderPath = `Public/${location}/${file?.fieldname}`;
         fs.mkdirSync(folderPath, { recursive: true });
         cb(null, folderPath);
       },
       filename: function (req, file, cb) {
-        cb(
-          null,
-          crypto.randomBytes(8).toString("hex") +
-            file.originalname +
-            path.extname(file.originalname)
-        );
+        cb(null, crypto.randomBytes(8).toString("hex") + file.originalname);
       },
     }),
     fileFilter,
@@ -62,29 +57,32 @@ const upload = (location) =>
 
 // S3 Upload
 
-// const upload = multer({
-//   storage: multerS3({
-//     s3: new S3Client({
-//       region: process.env.AWS_BUCKET_REGION,
-//       credentials: {
-//         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-//       },
-//     }),
-//     bucket: process.env.AWS_BUCKET_NAME,
-//     contentType: multerS3.AUTO_CONTENT_TYPE,
-//     acl: "public-read",
-//     metadata: function (req, file, cb) {
-//       cb(null, { fieldName: file.fieldname });
-//     },
-//     key: function (req, file, cb) {
-//       cb(
-//         null,
-//         crypto.randomBytes(16).toString("hex") + path.extname(file.originalname)
-//       );
-//     },
-//   }),
-//   fileFilter,
-// });
+const s3Upload = (location) =>
+  multer({
+    storage: multerS3({
+      s3: new S3Client({
+        region: process.env.AWS_BUCKET_REGION,
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        },
+      }),
+      bucket: process.env.AWS_BUCKET_NAME,
+      contentType: multerS3.AUTO_CONTENT_TYPE,
+      acl: "public-read",
+      metadata: function (req, file, cb) {
+        cb(null, { fieldName: file.fieldname });
+      },
+      key: function (req, file, cb) {
+        cb(
+          null,
+          `${location}/${file?.fieldname}/${crypto
+            .randomBytes(8)
+            .toString("hex")}${file.originalname}`
+        );
+      },
+    }),
+    fileFilter,
+  });
 
-module.exports = { auth, upload };
+module.exports = { auth, upload: localUpload };

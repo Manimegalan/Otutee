@@ -1,7 +1,7 @@
 const express = require("express");
 const instituteController = express.Router();
 
-const { upload } = require("../middleware/common");
+const { upload, auth } = require("../middleware/common");
 const instituteValidator = require("../middleware/validators/institute");
 const instituteService = require("../services/userService");
 const {
@@ -16,15 +16,18 @@ const {
 
 instituteController.post(
   "/register",
-  upload("Teacher").any("files"),
+  upload("Institute").fields([
+    { name: "ProfileImage", maxCount: 1 },
+    { name: "IdProof", maxCount: 1 },
+  ]),
   instituteValidator.register(),
   instituteValidator.validate,
   async (req, res) => {
     try {
       const data = {
         Role: "institute",
-        ProfileImage: req.files[0]?.filename,
-        IDProof: req.files[1]?.filename,
+        ProfileImage: req.files["ProfileImage"]?.[0]?.filename,
+        IDProof: req.files["IdProof"]?.[0]?.filename,
         Organization: req.body.Organization,
         Institute: req.body.Institute,
         InstituteName: req.body.InstituteName,
@@ -41,11 +44,6 @@ instituteController.post(
         District: req.body.District,
         Language: req.body.Language,
       };
-      if (!req.files[1]) {
-        return sendResponse(res, 400, "Failed", {
-          message: "Please upload ProfileImage and IDProof",
-        });
-      }
       const isEmailExist = await instituteService.findOne({
         Email: data.Email,
       });
@@ -378,6 +376,60 @@ instituteController.post(
 
       sendResponse(res, 200, "Success", {
         message: "OTP verified successfully!",
+      });
+    } catch (error) {
+      console.log(error);
+      sendResponse(res, 500, "Failed", {
+        message: error.message || "Internal server error",
+      });
+    }
+  }
+);
+
+instituteController.post(
+  "/update",
+  auth,
+  upload("Institute").fields([
+    { name: "ProfileImage", maxCount: 1 },
+    { name: "IdProof", maxCount: 1 },
+  ]),
+  instituteValidator.update(),
+  instituteValidator.validate,
+  async (req, res) => {
+    try {
+      const { _id } = req.user;
+      const data = {
+        ProfileImage: req.files["ProfileImage"]?.[0]?.filename,
+        IDProof: req.files["IdProof"]?.[0]?.filename,
+        Organization: req.body.Organization,
+        Institute: req.body.Institute,
+        InstituteName: req.body.InstituteName,
+        AdministratorName: req.body.AdministratorName,
+        // Email: req.body.Email,
+        // MobileNumber: req.body.MobileNumber,
+        Password: req.body.Password,
+        ConfirmPassword: req.body.ConfirmPassword,
+        InstituteWebsite: req.body.InstituteWebsite,
+        InstituteAddress: req.body.InstituteAddress,
+        Pincode: req.body.Pincode,
+        Country: req.body.Country,
+        State: req.body.State,
+        District: req.body.District,
+        Language: req.body.Language,
+      };
+      const isUserExist = await instituteService.findOne({ _id });
+      if (!isUserExist || isUserExist.Role !== "institute") {
+        return sendResponse(res, 400, "Failed", {
+          message: "Incorrect email or Institute not found!",
+        });
+      }
+      data.Password && (data.Password = createHash(data.Password));
+      data.ConfirmPassword &&
+        (data.ConfirmPassword = btoa(data.ConfirmPassword));
+      const instituteCreated = await instituteService.updateOne({ _id }, data);
+      sendResponse(res, 200, "Success", {
+        message: "Institute updated successfully!",
+        data: instituteCreated,
       });
     } catch (error) {
       console.log(error);
