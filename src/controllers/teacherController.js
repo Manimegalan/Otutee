@@ -457,4 +457,28 @@ teacherController.post(
   }
 );
 
+teacherController.post("/info", auth, async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const isUserExist = await teacherService.findOne({ _id });
+    if (!isUserExist || isUserExist.Role !== "teacher") {
+      return sendResponse(res, 400, "Failed", {
+        message: "Incorrect email or Teacher not found!",
+      });
+    }
+    isUserExist.set("Password", undefined);
+    isUserExist.set("ConfirmPassword", undefined);
+    isUserExist.set("token", undefined);
+    sendResponse(res, 200, "Success", {
+      message: "Teacher retrieved successfully!",
+      data: isUserExist,
+    });
+  } catch (error) {
+    console.log(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
+
 module.exports = teacherController;

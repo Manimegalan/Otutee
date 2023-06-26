@@ -440,4 +440,28 @@ instituteController.post(
   }
 );
 
+instituteController.post("/info", auth, async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const isUserExist = await instituteService.findOne({ _id });
+    if (!isUserExist || isUserExist.Role !== "institute") {
+      return sendResponse(res, 400, "Failed", {
+        message: "Incorrect email or Institute not found!",
+      });
+    }
+    isUserExist.set("Password", undefined);
+    isUserExist.set("ConfirmPassword", undefined);
+    isUserExist.set("token", undefined);
+    sendResponse(res, 200, "Success", {
+      message: "Institute retrieved successfully!",
+      data: isUserExist,
+    });
+  } catch (error) {
+    console.log(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
+
 module.exports = instituteController;
