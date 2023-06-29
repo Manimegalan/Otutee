@@ -1,1 +1,6 @@
-exports.publicFilesList = ["ProfileImage"];
+exports.publicFilesList = [
+  "ProfileImage",
+  "Post/Image",
+  "Post/Video",
+  "Post/PDF",
+];

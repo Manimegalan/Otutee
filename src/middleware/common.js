@@ -33,7 +33,11 @@ const auth = (req, res, next) => {
 };
 
 const fileFilter = (req, file, cb) => {
-  if (!file.mimetype.startsWith("image/")) {
+  if (
+    !file.mimetype.startsWith("image/") &&
+    !file.mimetype.startsWith("video/") &&
+    file.mimetype !== "application/pdf"
+  ) {
     return cb(new Error("Unsupported file format!"));
   }
   cb(null, true);
