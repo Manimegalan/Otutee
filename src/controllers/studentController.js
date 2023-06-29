@@ -28,8 +28,8 @@ studentController.post(
     try {
       const data = {
         Role: "student",
-        ProfileImage: req.files?.["ProfileImage"]?.[0]?.filename,
-        IDProof: req.files?.["IdProof"]?.[0]?.filename,
+        ProfileImage: req.files?.["ProfileImage"]?.[0]?.location,
+        IDProof: req.files?.["IdProof"]?.[0]?.location,
         Name: req.body.Name,
         MobileNumber: req.body.MobileNumber,
         Password: req.body.Password,
@@ -412,8 +412,8 @@ studentController.post(
     try {
       const { _id } = req.user;
       const data = {
-        ProfileImage: req.files["ProfileImage"]?.[0]?.filename,
-        IDProof: req.files["IdProof"]?.[0]?.filename,
+        ProfileImage: req.files["ProfileImage"]?.[0]?.location,
+        IDProof: req.files["IdProof"]?.[0]?.location,
         Name: req.body.Name,
         // MobileNumber: req.body.MobileNumber,
         // Email: req.body.Email,

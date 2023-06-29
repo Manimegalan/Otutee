@@ -6,6 +6,7 @@ const fs = require("fs");
 const { S3Client } = require("@aws-sdk/client-s3");
 const multerS3 = require("multer-s3");
 
+const { publicFilesList } = require("../utils/constants");
 const { sendResponse } = require("../utils/common");
 
 const auth = (req, res, next) => {
@@ -69,7 +70,14 @@ const s3Upload = (location) =>
       }),
       bucket: process.env.AWS_BUCKET_NAME,
       contentType: multerS3.AUTO_CONTENT_TYPE,
-      acl: "public-read",
+      acl: function (req, file, cb) {
+        const isPublicFile = publicFilesList.includes(file.fieldname);
+        if (isPublicFile) {
+          cb(null, "public-read");
+        } else {
+          cb(null, "private");
+        }
+      },
       metadata: function (req, file, cb) {
         cb(null, { fieldName: file.fieldname });
       },
@@ -78,11 +86,11 @@ const s3Upload = (location) =>
           null,
           `${location}/${file?.fieldname}/${crypto
             .randomBytes(8)
-            .toString("hex")}${file.originalname}`
+            .toString("hex")}_${file.originalname}`
         );
       },
     }),
     fileFilter,
   });
 
-module.exports = { auth, upload: localUpload };
+module.exports = { auth, upload: s3Upload };

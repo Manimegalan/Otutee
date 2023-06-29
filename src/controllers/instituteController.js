@@ -26,8 +26,8 @@ instituteController.post(
     try {
       const data = {
         Role: "institute",
-        ProfileImage: req.files["ProfileImage"]?.[0]?.filename,
-        IDProof: req.files["IdProof"]?.[0]?.filename,
+        ProfileImage: req.files["ProfileImage"]?.[0]?.location,
+        IDProof: req.files["IdProof"]?.[0]?.location,
         Organization: req.body.Organization,
         Institute: req.body.Institute,
         InstituteName: req.body.InstituteName,
@@ -399,8 +399,8 @@ instituteController.post(
     try {
       const { _id } = req.user;
       const data = {
-        ProfileImage: req.files["ProfileImage"]?.[0]?.filename,
-        IDProof: req.files["IdProof"]?.[0]?.filename,
+        ProfileImage: req.files["ProfileImage"]?.[0]?.location,
+        IDProof: req.files["IdProof"]?.[0]?.location,
         Organization: req.body.Organization,
         Institute: req.body.Institute,
         InstituteName: req.body.InstituteName,
