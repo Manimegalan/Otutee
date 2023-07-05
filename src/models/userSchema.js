@@ -82,7 +82,7 @@ const userSchema = mongoose.Schema(
       type: String,
     },
     Subjects: {
-      type: String,
+      type: [String],
     },
     SchoolOrCollegeName: {
       type: String,
