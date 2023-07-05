@@ -5,7 +5,6 @@ const { upload, auth } = require("../middleware/common");
 const studentValidator = require("../middleware/validators/student");
 const studentService = require("../services/userService");
 const educationService = require("../services/educationService");
-
 const {
   sendResponse,
   createHash,
@@ -69,6 +68,12 @@ studentController.post(
       const educationRes = await educationService.findOne({
         _id: req.body.Education,
       });
+      if(!educationRes) {
+        return sendResponse(res, 400, "Failed", {
+          message:
+            "Invalid education",
+        });
+      }
       data.EducationType = educationRes.Type;
       data.Password = createHash(data.Password);
       data.ConfirmPassword = btoa(data.ConfirmPassword);

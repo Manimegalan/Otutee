@@ -4,6 +4,7 @@ const teacherController = express.Router();
 const { upload, auth } = require("../middleware/common");
 const teacherValidator = require("../middleware/validators/teacher");
 const teacherService = require("../services/userService");
+const educationService = require("../services/educationService");
 const {
   sendResponse,
   createHash,
@@ -66,6 +67,16 @@ teacherController.post(
             "MobileNumber already exist! Please register with another MobileNumber",
         });
       }
+      const educationRes = await educationService.findOne({
+        _id: req.body.Education,
+      });
+      if(!educationRes) {
+        return sendResponse(res, 400, "Failed", {
+          message:
+            "Invalid education",
+        });
+      }
+      data.EducationType = educationRes.Type;
       data.Password = createHash(data.Password);
       data.ConfirmPassword = btoa(data.ConfirmPassword);
       data.MobileNumberVerified = false;
