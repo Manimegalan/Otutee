@@ -34,16 +34,16 @@ exports.verifyJwtToken = (data) => {
 
 exports.sendMail = async (Email, code) => {
   let transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false, // true for 465, false for other ports
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
       user: process.env.NODEMAILER_USERNAME,
       pass: process.env.NODEMAILER_PASSWORD,
     },
   });
   const info = await transporter.sendMail({
-    from: '"Fred Foo 👻" <manimegalan@gmail.com>',
+    from: `"Otutee" <${process.env.NODEMAILER_USERNAME}>`,
     to: Email,
     subject: "Reset password",
     text: "Reset password",

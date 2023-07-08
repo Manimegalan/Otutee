@@ -73,7 +73,12 @@ const s3Upload = (location) =>
         },
       }),
       bucket: process.env.AWS_BUCKET_NAME,
-      contentType: multerS3.AUTO_CONTENT_TYPE,
+      contentType: function (req, file, cb) {
+        const mimeTypes = { mp4: "video/mp4" };
+        const fileExt = file.originalname.split(".").pop();
+        const contentType = mimeTypes[fileExt] || multerS3.AUTO_CONTENT_TYPE;
+        cb(null, contentType);
+      },
       acl: function (req, file, cb) {
         const isPublicFile = publicFilesList.includes(file.fieldname);
         if (isPublicFile) {
