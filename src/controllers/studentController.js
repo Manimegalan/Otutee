@@ -1,7 +1,7 @@
 const express = require("express");
 const studentController = express.Router();
 
-const { upload, auth } = require("../middleware/common");
+const { auth, localUpload, s3Upload } = require("../middleware/common");
 const studentValidator = require("../middleware/validators/student");
 const studentService = require("../services/userService");
 const educationService = require("../services/educationService");
@@ -17,7 +17,7 @@ const {
 
 studentController.post(
   "/register",
-  upload("Student").fields([
+  localUpload("Student").fields([
     { name: "ProfileImage", maxCount: 1 },
     { name: "IdProof", maxCount: 1 },
   ]),
@@ -27,8 +27,6 @@ studentController.post(
     try {
       const data = {
         Role: "student",
-        ProfileImage: req.files?.["ProfileImage"]?.[0]?.location,
-        IDProof: req.files?.["IdProof"]?.[0]?.location,
         Name: req.body.Name,
         MobileNumber: req.body.MobileNumber,
         Password: req.body.Password,
@@ -81,6 +79,18 @@ studentController.post(
       const studentCreated = await studentService.create(data);
       studentCreated.set("Password", undefined);
       studentCreated.set("ConfirmPassword", undefined);
+
+      if(req.files.ProfileImage[0]) {
+        const ProfileImage = await s3Upload({ location: `Student/${studentCreated._id}`, file: req.files.ProfileImage[0]});
+        await studentService.updateOne({_id: studentCreated._id}, {ProfileImage})
+        studentCreated.set("ProfileImage", ProfileImage )
+      }
+      if(req.files.IdProof[0]) {
+        const IDProof = await s3Upload({ location: `Student/${studentCreated._id}`, file: req.files.IdProof[0] });
+        await studentService.updateOne({_id: studentCreated._id}, {IDProof})
+        studentCreated.set("IDProof", IDProof)
+      }
+
       sendResponse(res, 200, "Success", {
         message: "Student registered successfully!",
         data: studentCreated,
@@ -407,7 +417,7 @@ studentController.post(
 studentController.post(
   "/update",
   auth,
-  upload("Student").fields([
+  localUpload("Student").fields([
     { name: "ProfileImage", maxCount: 1 },
     { name: "IdProof", maxCount: 1 },
   ]),
@@ -417,8 +427,6 @@ studentController.post(
     try {
       const { _id } = req.user;
       const data = {
-        ProfileImage: req.files["ProfileImage"]?.[0]?.location,
-        IDProof: req.files["IdProof"]?.[0]?.location,
         Name: req.body.Name,
         // MobileNumber: req.body.MobileNumber,
         // Email: req.body.Email,
@@ -450,6 +458,16 @@ studentController.post(
       data.ConfirmPassword &&
         (data.ConfirmPassword = btoa(data.ConfirmPassword));
       const studentCreated = await studentService.updateOne({ _id }, data);
+
+      if(req.files.ProfileImage[0]) {
+        const ProfileImage = await s3Upload({ location: `Student/${_id}`, file: req.files.ProfileImage[0]});
+        await studentService.updateOne({ _id }, { ProfileImage })
+      }
+      if(req.files.IdProof[0]) {
+        const IDProof = await s3Upload({ location: `Student/${_id}`, file: req.files.IdProof[0] });
+        await studentService.updateOne({ _id }, { IDProof })
+      }
+
       sendResponse(res, 200, "Success", {
         message: "Student updated successfully!",
         data: studentCreated,

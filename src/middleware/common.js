@@ -1,10 +1,18 @@
 const jwt = require("jsonwebtoken");
-const path = require("path");
 const crypto = require("crypto");
-const multer = require("multer");
 const fs = require("fs");
-const { S3Client } = require("@aws-sdk/client-s3");
+
+const multer = require("multer");
 const multerS3 = require("multer-s3");
+
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const s3 = new S3Client({
+  region: process.env.AWS_BUCKET_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+})
 
 const { publicFilesList } = require("../utils/constants");
 const { sendResponse } = require("../utils/common");
@@ -43,8 +51,6 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-// Local Storage
-
 const localUpload = (location) =>
   multer({
     storage: multer.diskStorage({
@@ -54,24 +60,16 @@ const localUpload = (location) =>
         cb(null, folderPath);
       },
       filename: function (req, file, cb) {
-        cb(null, crypto.randomBytes(8).toString("hex") + file.originalname);
+        cb(null, crypto.randomBytes(8).toString("hex") + "_" +file.originalname);
       },
     }),
     fileFilter,
   });
 
-// S3 Upload
-
-const s3Upload = (location) =>
+const upload = (location) =>
   multer({
     storage: multerS3({
-      s3: new S3Client({
-        region: process.env.AWS_BUCKET_REGION,
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        },
-      }),
+      s3,
       bucket: process.env.AWS_BUCKET_NAME,
       contentType: function (req, file, cb) {
         const mimeTypes = { mp4: "video/mp4" };
@@ -102,4 +100,14 @@ const s3Upload = (location) =>
     fileFilter,
   });
 
-module.exports = { auth, upload: s3Upload };
+const s3Upload = async ({file, location}) => {
+  const Key = `${location}/${file?.fieldname}/${crypto.randomBytes(8).toString("hex")}_${file.originalname}`;
+  const Body = fs.readFileSync(file.path);
+  const ACL = publicFilesList.includes(file.fieldname) ? "public-read" : "private";
+  const ContentType = file.mimetype;
+  await s3.send( new PutObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, ACL, ContentType, Key, Body }));
+  fs.unlinkSync(file.path);
+  return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_BUCKET_REGION}.amazonaws.com/${Key}`;
+}
+
+module.exports = { auth, upload, localUpload, s3Upload };
