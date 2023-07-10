@@ -17,7 +17,7 @@ const {
 
 teacherController.post(
   "/register",
-  localUpload("Teacher").fields([
+  localUpload("teacher").fields([
     { name: "ProfileImage", maxCount: 1 },
     { name: "IdProof", maxCount: 1 },
   ]),
@@ -68,10 +68,9 @@ teacherController.post(
       const educationRes = await educationService.findOne({
         _id: req.body.Education,
       });
-      if(!educationRes) {
+      if (!educationRes) {
         return sendResponse(res, 400, "Failed", {
-          message:
-            "Invalid education",
+          message: "Invalid education",
         });
       }
       data.EducationType = educationRes.Type;
@@ -82,15 +81,27 @@ teacherController.post(
       teacherCreated.set("Password", undefined);
       teacherCreated.set("ConfirmPassword", undefined);
 
-      if(req.files.ProfileImage[0]) {
-        const ProfileImage = await s3Upload({ location: `Teacher/${teacherCreated._id}`, file: req.files.ProfileImage[0]});
-        await teacherService.updateOne({_id: teacherCreated._id}, {ProfileImage})
-        teacherCreated.set("ProfileImage", ProfileImage )
+      if (req?.files?.ProfileImage?.[0]) {
+        const ProfileImage = await s3Upload({
+          location: `teacher/${teacherCreated._id}`,
+          file: req.files.ProfileImage[0],
+        });
+        await teacherService.updateOne(
+          { _id: teacherCreated._id },
+          { ProfileImage }
+        );
+        teacherCreated.set("ProfileImage", ProfileImage);
       }
-      if(req.files.IdProof[0]) {
-        const IDProof = await s3Upload({ location: `Teacher/${teacherCreated._id}`, file: req.files.IdProof[0] });
-        await teacherService.updateOne({_id: teacherCreated._id}, {IDProof})
-        teacherCreated.set("IDProof", IDProof)
+      if (req?.files?.IdProof?.[0]) {
+        const IDProof = await s3Upload({
+          location: `teacher/${teacherCreated._id}`,
+          file: req.files.IdProof[0],
+        });
+        await teacherService.updateOne(
+          { _id: teacherCreated._id },
+          { IDProof }
+        );
+        teacherCreated.set("IDProof", IDProof);
       }
 
       sendResponse(res, 200, "Success", {
@@ -464,13 +475,19 @@ teacherController.post(
 
       const teacherCreated = await teacherService.updateOne({ _id }, data);
 
-      if(req.files.ProfileImage[0]) {
-        const ProfileImage = await s3Upload({ location: `Teacher/${_id}`, file: req.files.ProfileImage[0]});
-        await teacherService.updateOne({ _id }, { ProfileImage })
+      if (req.files.ProfileImage?.[0]) {
+        const ProfileImage = await s3Upload({
+          location: `teacher/${_id}`,
+          file: req.files.ProfileImage[0],
+        });
+        await teacherService.updateOne({ _id }, { ProfileImage });
       }
-      if(req.files.IdProof[0]) {
-        const IDProof = await s3Upload({ location: `Teacher/${_id}`, file: req.files.IdProof[0] });
-        await teacherService.updateOne({ _id }, { IDProof })
+      if (req.files.IdProof?.[0]) {
+        const IDProof = await s3Upload({
+          location: `teacher/${_id}`,
+          file: req.files.IdProof[0],
+        });
+        await teacherService.updateOne({ _id }, { IDProof });
       }
 
       sendResponse(res, 200, "Success", {

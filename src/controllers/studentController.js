@@ -17,7 +17,7 @@ const {
 
 studentController.post(
   "/register",
-  localUpload("Student").fields([
+  localUpload("student").fields([
     { name: "ProfileImage", maxCount: 1 },
     { name: "IdProof", maxCount: 1 },
   ]),
@@ -66,10 +66,9 @@ studentController.post(
       const educationRes = await educationService.findOne({
         _id: req.body.Education,
       });
-      if(!educationRes) {
+      if (!educationRes) {
         return sendResponse(res, 400, "Failed", {
-          message:
-            "Invalid education",
+          message: "Invalid education",
         });
       }
       data.EducationType = educationRes.Type;
@@ -80,15 +79,27 @@ studentController.post(
       studentCreated.set("Password", undefined);
       studentCreated.set("ConfirmPassword", undefined);
 
-      if(req.files.ProfileImage[0]) {
-        const ProfileImage = await s3Upload({ location: `Student/${studentCreated._id}`, file: req.files.ProfileImage[0]});
-        await studentService.updateOne({_id: studentCreated._id}, {ProfileImage})
-        studentCreated.set("ProfileImage", ProfileImage )
+      if (req?.files?.ProfileImage?.[0]) {
+        const ProfileImage = await s3Upload({
+          location: `student/${studentCreated._id}`,
+          file: req.files.ProfileImage[0],
+        });
+        await studentService.updateOne(
+          { _id: studentCreated._id },
+          { ProfileImage }
+        );
+        studentCreated.set("ProfileImage", ProfileImage);
       }
-      if(req.files.IdProof[0]) {
-        const IDProof = await s3Upload({ location: `Student/${studentCreated._id}`, file: req.files.IdProof[0] });
-        await studentService.updateOne({_id: studentCreated._id}, {IDProof})
-        studentCreated.set("IDProof", IDProof)
+      if (req?.files?.IdProof?.[0]) {
+        const IDProof = await s3Upload({
+          location: `student/${studentCreated._id}`,
+          file: req.files.IdProof[0],
+        });
+        await studentService.updateOne(
+          { _id: studentCreated._id },
+          { IDProof }
+        );
+        studentCreated.set("IDProof", IDProof);
       }
 
       sendResponse(res, 200, "Success", {
@@ -459,13 +470,19 @@ studentController.post(
         (data.ConfirmPassword = btoa(data.ConfirmPassword));
       const studentCreated = await studentService.updateOne({ _id }, data);
 
-      if(req.files.ProfileImage[0]) {
-        const ProfileImage = await s3Upload({ location: `Student/${_id}`, file: req.files.ProfileImage[0]});
-        await studentService.updateOne({ _id }, { ProfileImage })
+      if (req?.files?.ProfileImage?.[0]) {
+        const ProfileImage = await s3Upload({
+          location: `student/${_id}`,
+          file: req.files.ProfileImage[0],
+        });
+        await studentService.updateOne({ _id }, { ProfileImage });
       }
-      if(req.files.IdProof[0]) {
-        const IDProof = await s3Upload({ location: `Student/${_id}`, file: req.files.IdProof[0] });
-        await studentService.updateOne({ _id }, { IDProof })
+      if (req?.files?.IdProof?.[0]) {
+        const IDProof = await s3Upload({
+          location: `student/${_id}`,
+          file: req.files.IdProof[0],
+        });
+        await studentService.updateOne({ _id }, { IDProof });
       }
 
       sendResponse(res, 200, "Success", {

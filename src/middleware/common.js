@@ -12,7 +12,7 @@ const s3 = new S3Client({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
-})
+});
 
 const { publicFilesList } = require("../utils/constants");
 const { sendResponse } = require("../utils/common");
@@ -60,7 +60,10 @@ const localUpload = (location) =>
         cb(null, folderPath);
       },
       filename: function (req, file, cb) {
-        cb(null, crypto.randomBytes(8).toString("hex") + "_" +file.originalname);
+        cb(
+          null,
+          crypto.randomBytes(8).toString("hex") + "_" + file.originalname
+        );
       },
     }),
     fileFilter,
@@ -91,23 +94,35 @@ const upload = (location) =>
       key: function (req, file, cb) {
         cb(
           null,
-          `${location}/${file?.fieldname}/${crypto
-            .randomBytes(8)
-            .toString("hex")}_${file.originalname}`
+          `${req.user.Role}/${req.user._id}/${location}/${
+            file?.fieldname
+          }/${crypto.randomBytes(8).toString("hex")}_${file.originalname}`
         );
       },
     }),
     fileFilter,
   });
 
-const s3Upload = async ({file, location}) => {
-  const Key = `${location}/${file?.fieldname}/${crypto.randomBytes(8).toString("hex")}_${file.originalname}`;
+const s3Upload = async ({ file, location }) => {
+  const Key = `${location}/${file?.fieldname}/${crypto
+    .randomBytes(8)
+    .toString("hex")}_${file.originalname}`;
   const Body = fs.readFileSync(file.path);
-  const ACL = publicFilesList.includes(file.fieldname) ? "public-read" : "private";
+  const ACL = publicFilesList.includes(file.fieldname)
+    ? "public-read"
+    : "private";
   const ContentType = file.mimetype;
-  await s3.send( new PutObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, ACL, ContentType, Key, Body }));
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME,
+      ACL,
+      ContentType,
+      Key,
+      Body,
+    })
+  );
   fs.unlinkSync(file.path);
   return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_BUCKET_REGION}.amazonaws.com/${Key}`;
-}
+};
 
 module.exports = { auth, upload, localUpload, s3Upload };
