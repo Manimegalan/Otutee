@@ -77,8 +77,9 @@ const upload = (location) =>
       contentType: function (req, file, cb) {
         const mimeTypes = { mp4: "video/mp4" };
         const fileExt = file.originalname.split(".").pop();
-        const contentType = mimeTypes[fileExt] || multerS3.AUTO_CONTENT_TYPE;
-        cb(null, contentType);
+        const contentType = mimeTypes[fileExt];
+        if(contentType) cb(null, contentType);
+        else multerS3.AUTO_CONTENT_TYPE(req, file, cb);
       },
       acl: function (req, file, cb) {
         const isPublicFile = publicFilesList.includes(file.fieldname);

@@ -10,9 +10,9 @@ const userSchema = mongoose.Schema(
     ProfileImage: {
       type: String,
     },
-    IDProof: {
+    IDProof: [{
       type: String,
-    },
+    }],
     Name: {
       type: String,
     },

@@ -1,7 +1,7 @@
 const express = require("express");
 const instituteController = express.Router();
 
-const { upload, auth } = require("../middleware/common");
+const { upload, auth, localUpload, s3Upload } = require("../middleware/common");
 const instituteValidator = require("../middleware/validators/institute");
 const instituteService = require("../services/userService");
 const {
@@ -16,9 +16,9 @@ const {
 
 instituteController.post(
   "/register",
-  upload("Institute").fields([
+  localUpload("institute").fields([
     { name: "ProfileImage", maxCount: 1 },
-    { name: "IdProof", maxCount: 1 },
+    { name: "IdProof", maxCount: 10 },
   ]),
   instituteValidator.register(),
   instituteValidator.validate,
@@ -26,8 +26,6 @@ instituteController.post(
     try {
       const data = {
         Role: "institute",
-        ProfileImage: req.files["ProfileImage"]?.[0]?.location,
-        IDProof: req.files["IdProof"]?.[0]?.location,
         Organization: req.body.Organization,
         Institute: req.body.Institute,
         InstituteName: req.body.InstituteName,
@@ -67,6 +65,33 @@ instituteController.post(
       const instituteCreated = await instituteService.create(data);
       instituteCreated.set("Password", undefined);
       instituteCreated.set("ConfirmPassword", undefined);
+
+      if (req?.files?.ProfileImage?.[0]) {
+        const ProfileImage = await s3Upload({
+          location: `institute/${instituteCreated._id}`,
+          file: req.files.ProfileImage[0],
+        });
+        await instituteService.updateOne(
+          { _id: instituteCreated._id },
+          { ProfileImage }
+        );
+        instituteCreated.set("ProfileImage", ProfileImage);
+      }
+      if (req?.files?.IdProof?.[0]) {
+        const IDProof = []
+        for await (const file of req.files.IdProof) {
+          IDProof.push( await s3Upload({
+            location: `institute/${instituteCreated._id}`,
+            file: file,
+          }));
+        }
+        await instituteService.updateOne(
+          { _id: instituteCreated._id },
+          { IDProof }
+        );
+        instituteCreated.set("IDProof", IDProof);
+      }
+
       sendResponse(res, 200, "Success", {
         message: "Institute registered successfully!",
         data: instituteCreated,
@@ -389,7 +414,7 @@ instituteController.post(
 instituteController.post(
   "/update",
   auth,
-  upload("Institute").fields([
+  localUpload("institute").fields([
     { name: "ProfileImage", maxCount: 1 },
     { name: "IdProof", maxCount: 1 },
   ]),
@@ -399,8 +424,6 @@ instituteController.post(
     try {
       const { _id } = req.user;
       const data = {
-        ProfileImage: req.files["ProfileImage"]?.[0]?.location,
-        IDProof: req.files["IdProof"]?.[0]?.location,
         Organization: req.body.Organization,
         Institute: req.body.Institute,
         InstituteName: req.body.InstituteName,
@@ -427,6 +450,31 @@ instituteController.post(
       data.ConfirmPassword &&
         (data.ConfirmPassword = btoa(data.ConfirmPassword));
       const instituteCreated = await instituteService.updateOne({ _id }, data);
+
+      if (req?.files?.ProfileImage?.[0]) {
+        const ProfileImage = await s3Upload({
+          location: `institute/${_id}`,
+          file: req.files.ProfileImage[0],
+        });
+        await instituteService.updateOne(
+          { _id },
+          { ProfileImage }
+        );
+      }
+      if (req?.files?.IdProof?.[0]) {
+        const IDProof = []
+        for await (const file of req.files.IdProof) {
+          IDProof.push( await s3Upload({
+            location: `institute/${_id}`,
+            file: file,
+          }));
+        }
+        await instituteService.updateOne(
+          { _id },
+          { IDProof }
+        );
+      }
+      
       sendResponse(res, 200, "Success", {
         message: "Institute updated successfully!",
         data: instituteCreated,
