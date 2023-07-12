@@ -78,12 +78,14 @@ instituteController.post(
         instituteCreated.set("ProfileImage", ProfileImage);
       }
       if (req?.files?.IdProof?.[0]) {
-        const IDProof = []
+        const IDProof = [];
         for await (const file of req.files.IdProof) {
-          IDProof.push( await s3Upload({
-            location: `institute/${instituteCreated._id}`,
-            file: file,
-          }));
+          IDProof.push(
+            await s3Upload({
+              location: `institute/${instituteCreated._id}`,
+              file: file,
+            })
+          );
         }
         await instituteService.updateOne(
           { _id: instituteCreated._id },
@@ -456,25 +458,21 @@ instituteController.post(
           location: `institute/${_id}`,
           file: req.files.ProfileImage[0],
         });
-        await instituteService.updateOne(
-          { _id },
-          { ProfileImage }
-        );
+        await instituteService.updateOne({ _id }, { ProfileImage });
       }
       if (req?.files?.IdProof?.[0]) {
-        const IDProof = []
+        const IDProof = [];
         for await (const file of req.files.IdProof) {
-          IDProof.push( await s3Upload({
-            location: `institute/${_id}`,
-            file: file,
-          }));
+          IDProof.push(
+            await s3Upload({
+              location: `institute/${_id}`,
+              file: file,
+            })
+          );
         }
-        await instituteService.updateOne(
-          { _id },
-          { IDProof }
-        );
+        await instituteService.updateOne({ _id }, { IDProof });
       }
-      
+
       sendResponse(res, 200, "Success", {
         message: "Institute updated successfully!",
         data: instituteCreated,
