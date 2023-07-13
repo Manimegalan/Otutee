@@ -19,16 +19,16 @@ const { sendResponse } = require("../utils/common");
 
 const auth = (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
-  if (!authHeader) {
-    return sendResponse(res, 403, "Failed", {
-      message: "Authorization token not found!",
-    });
-  }
   if (!authHeader?.startsWith("Bearer "))
     return sendResponse(res, 403, "Failed", {
       message: "Invalid authorization method!",
     });
   const token = authHeader.split(" ")[1];
+  if (!token || token === null) {
+    return sendResponse(res, 403, "Failed", {
+      message: "Authorization token not found!",
+    });
+  }
   jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
     if (err)
       return sendResponse(res, 403, "Failed", {
@@ -78,7 +78,7 @@ const upload = (location) =>
         const mimeTypes = { mp4: "video/mp4" };
         const fileExt = file.originalname.split(".").pop();
         const contentType = mimeTypes[fileExt];
-        if(contentType) cb(null, contentType);
+        if (contentType) cb(null, contentType);
         else multerS3.AUTO_CONTENT_TYPE(req, file, cb);
       },
       acl: function (req, file, cb) {

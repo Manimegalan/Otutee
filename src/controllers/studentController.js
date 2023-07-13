@@ -194,15 +194,21 @@ studentController.post(
           message: "Please Verify your mobile number!",
         });
       }
-      const { _id, Name, Role, Education, EducationType, Class } = isEmailExist;
-      const token = createJwtToken(
+      const { _id, Name, Role, Education, EducationType, Class, token } =
+        isEmailExist;
+      if (token) {
+        return sendResponse(res, 401, "Failed", {
+          message: "Access denied. Multiple sessions not allowed.",
+        });
+      }
+      const jwtToken = createJwtToken(
         { _id, Name, Email, Role, Education, EducationType, Class },
         "1d"
       );
-      await studentService.updateOne({ _id }, { token });
+      await studentService.updateOne({ _id }, { token: jwtToken });
       sendResponse(res, 200, "Success", {
         message: "Logged in successfully!",
-        data: { token, _id, Email, Name, Role, Education, Class },
+        data: { token: jwtToken, _id, Email, Name, Role, Education, Class },
       });
     } catch (error) {
       console.log(error);
@@ -212,6 +218,21 @@ studentController.post(
     }
   }
 );
+
+studentController.post("/signout", auth, async (req, res) => {
+  try {
+    const { _id } = req.user;
+    await studentService.updateOne({ _id }, { token: null });
+    sendResponse(res, 200, "Success", {
+      message: "Logged out successfully!"
+    });
+  } catch (error) {
+    console.log(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 
 studentController.post(
   "/forgotPassword",

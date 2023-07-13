@@ -196,12 +196,17 @@ teacherController.post(
           message: "Please Verify your mobile number!",
         });
       }
-      const { _id, Name, Role } = isEmailExist;
-      const token = createJwtToken({ _id, Name, Email, Role }, "1d");
-      await teacherService.updateOne({ _id }, { token });
+      const { _id, Name, Role, token } = isEmailExist;
+      if (token) {
+        return sendResponse(res, 401, "Failed", {
+          message: "Access denied. Multiple sessions not allowed.",
+        });
+      }
+      const jwtToken = createJwtToken({ _id, Name, Email, Role }, "1d");
+      await teacherService.updateOne({ _id }, { token: jwtToken });
       sendResponse(res, 200, "Success", {
         message: "Logged in successfully!",
-        data: { token, _id, Email, Name, Role },
+        data: { token: jwtToken, _id, Email, Name, Role },
       });
     } catch (error) {
       console.log(error);
@@ -211,6 +216,21 @@ teacherController.post(
     }
   }
 );
+
+teacherController.post("/signout", auth, async (req, res) => {
+  try {
+    const { _id } = req.user;
+    await teacherService.updateOne({ _id }, { token: null });
+    sendResponse(res, 200, "Success", {
+      message: "Logged out successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 
 teacherController.post(
   "/forgotPassword",
