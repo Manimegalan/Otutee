@@ -24,5 +24,6 @@ router.use("/subjects/post", auth, postController);
 router.use("/institute/toppers", auth, toppersController)
 
 router.use("/media", auth, commonController);
+router.use("/", commonController)
 
 module.exports = router;

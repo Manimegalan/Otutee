@@ -23,7 +23,6 @@ exports.connectToDatabase = async (req, res, next) => {
       (db) => {
         console.log(String.fromCodePoint(0x1f5c2), "DB Connection Successful");
         dbConnection = db.connections[0].readyState;
-        mongooseConnection = db;
         next();
       },
       (err) => {
@@ -42,3 +41,5 @@ exports.connectToDatabase = async (req, res, next) => {
     );
   }
 };
+
+exports.getDB = () => mongoose.connection
